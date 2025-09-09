@@ -4,14 +4,14 @@ namespace Loupedeck.UE_VirtualBridgePlugin
 
     // This class implements an example adjustment that counts the rotation ticks of a dial.
 
-    public class CounterAdjustment : PluginDynamicAdjustment
+    public class TestAdjustment : PluginDynamicAdjustment
     {
         // This variable holds the current value of the counter.
         private Int32 _counter = 0;
 
         // Initializes the adjustment class.
         // When `hasReset` is set to true, a reset command is automatically created for this adjustment.
-        public CounterAdjustment()
+        public TestAdjustment()
             : base(displayName: "Tick Counter", description: "Counts rotation ticks", groupName: "Adjustments", hasReset: true)
         {
         }

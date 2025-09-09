@@ -6,7 +6,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin
     {
         private Int32 _sign = 1;
         public ToggleMuteCommand()
-    : base(displayName: "Toggle Mute", description: "Toggles audio mute state", groupName: "Audio")
+    : base(displayName: "Toggle Mute", description: "Toggles audio mute state", groupName: "Audio###Group1")
         {
         }
 
