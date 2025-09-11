@@ -1,3 +1,6 @@
 {
-  "UnrealEndpoint": "http://YOUR_IP_HERE:30010"
+  "UnrealEndpoint": "http://YOUR_IP_HERE:30010" 
+  // on same machine, just put localhost for IP
+  // for remote machine, put the IP address of host machine
+  // will be different endpoints for different function calls
 }

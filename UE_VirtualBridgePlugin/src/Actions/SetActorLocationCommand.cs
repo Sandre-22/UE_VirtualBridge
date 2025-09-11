@@ -68,18 +68,24 @@ namespace Loupedeck.UE_VirtualBridgePlugin
                 functionName = "SetActorLocation",
                 parameters = new
                 {
-                    NewLocation = new { X = x, Y = y, Z = z },
-                    bSweep = false                    
+                    NewLocation = new { X = 0, Y = 0, Z = 100 },
+                    bSweep = false
                 },
                 generateTransaction = true
             };
 
+
             var jsonBody = JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
             try
             {
-                var response = await client.PostAsync(endpoint, content);
+                var response = await client.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
                 this.Log.Info($"Unreal responded: {responseBody}");
                 return response.IsSuccessStatusCode;
@@ -93,6 +99,6 @@ namespace Loupedeck.UE_VirtualBridgePlugin
 
         // Display coordinates on the button
         protected override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize) =>
-            $"Set actor location{Environment.NewLine}200, 150, 50";
+            $"Set actor location{Environment.NewLine}0X0Y100Z";
     }
 }
