@@ -8,13 +8,13 @@ namespace Loupedeck.UE_VirtualBridgePlugin
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Actions;
     using Loupedeck.UE_VirtualBridgePlugin.Network;
+    using Loupedeck.UE_VirtualBridgePlugin.Services;
 
     // This class contains the plugin-level logic of the Loupedeck plugin.
 
     public class UE_VirtualBridgePlugin : Plugin
     {
-        private RcWs _ws;
-        private CancellationTokenSource _cts;
+        public UnrealRemoteService UnrealService { get; private set; }
 
         // Gets a value indicating whether this is an API-only plugin.
         public override Boolean UsesApplicationApiOnly => true;
@@ -35,39 +35,17 @@ namespace Loupedeck.UE_VirtualBridgePlugin
         // This method is called when the plugin is loaded.
         public override void Load()
         {
-            // Connect <0.0.0.0> to IP Address of Host computer
-            // 30020 should be the websocket server port of the Unreal project
-            // To find this, go to Project Settings -> "Remote Control" -> Remote Control Websocket Server Port
-            /*_ws = new RcWs("ws://<0.0.0.0>:30020");
+            var configService = new ConfigService();
+            var client = new NetworkClient(configService.UnrealEndpoint);
 
-            _cts = new CancellationTokenSource();
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _ws.ConnectAsync(_cts.Token);
-
-                    // Optional: log responses so you can see /remote/info, etc.
-                    await _ws.ReceiveLoop(async msg =>
-                    {
-                        this.Log.Info($"UE WS <- {msg}");
-                        await Task.CompletedTask;
-                    }, _cts.Token);
-
-                }
-                catch (Exception ex)
-                {
-                    this.Log.Info($"WS connect failed (ok if UE not running yet): {ex.Message}");
-                }
-            });
-            */
+            // Initialize Unreal service once
+            var unrealService = new UnrealRemoteService(client);
         }
 
         // This method is called when the plugin is unloaded.
         public override void Unload()
         {
-            /*_cts?.Cancel();
-            _ws?.Dispose();*/
+            
         }
     }
 }
