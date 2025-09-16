@@ -3,7 +3,7 @@ using System.Text.Json;
 
 public class ConfigService
 {
-    public string UnrealEndpoint { get; private set; } = "http://127.0.0.1:30010"; // fallback
+    public string UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
 
     public ConfigService(string configFile = "config.json")
     {

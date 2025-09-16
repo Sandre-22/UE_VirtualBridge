@@ -1,4 +1,4 @@
-﻿/*namespace Loupedeck.UE_VirtualBridgePlugin
+﻿namespace Loupedeck.UE_VirtualBridgePlugin
 {
     using System;
     using System.IO;
@@ -11,21 +11,62 @@
 
     public class LocationAdjustment : PluginDynamicAdjustment
     {
-        private Int32 _posZ = 0;  // Instantiate the Z value of the object
+        private static readonly HttpClient client = new HttpClient();
+        string endpoint;
+
         public LocationAdjustment()
     : base(displayName: "ZAdjust", description: "Counts rotation ticks", groupName: "Unreal", hasReset: true)
         {
+            this.ConfigCall();
         }
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            string endpoint;
-
             // Load config.json at runtime
+            //this.ConfigCall();
+
+            // Hardcoded actor path and coordinates for now
+            var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
+
+            // Fire-and-forget async task
+            Task.Run(async () =>
+            {
+                var (data, x, y, z) = await GetActorLocationAsync(endpoint, actorPath);
+                var success = await UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
+                if (success)
+                    this.Log.Info("Actor location updated");
+                else
+                    this.Log.Error("Failed to update actor location.");
+            });
+        }
+
+        protected override void RunCommand(String actionParameter)
+        {
+            //this.ConfigCall();
+            // Hardcoded actor path and coordinates for now
+            var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
+            Task.Run(async () =>
+            {
+                var (data, x, y, z) = await GetActorLocationAsync(endpoint, actorPath);
+                var success = await UpdateActorLocationAsync(endpoint, actorPath, x, y, 0f);
+                if (success)
+                    this.Log.Info("Actor location updated");
+                else
+                    this.Log.Error("Failed to update actor location.");
+            });
+            this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
+        }
+
+
+        // ASYNC API CALLS
+
+        private void ConfigCall()
+        {
             try
             {
                 var configText = File.ReadAllText("config.json");
                 using var doc = JsonDocument.Parse(configText);
-                endpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+                string fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+                endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
 
                 if (string.IsNullOrWhiteSpace(endpoint))
                 {
@@ -38,22 +79,7 @@
                 this.Log.Error(ex, "Failed to load config.json");
                 return;
             }
-
-            // Hardcoded actor path and coordinates for now
-            var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
-            float x = 200, y = 150, z = 50;
-
-            // Fire-and-forget async task
-            Task.Run(async () =>
-            {
-                var success = await UpdateActorLocationAsync(endpoint, actorPath, x, y, z);
-                if (success)
-                    this.Log.Info("Actor location updated");
-                else
-                    this.Log.Error("Failed to update actor location.");
-            });
         }
-
         private async Task<bool> UpdateActorLocationAsync(string endpoint, string actorPath, float x, float y, float z)
         {
             var payload = new
@@ -90,6 +116,40 @@
                 return false;
             }
         }
+        private async Task<(bool, float, float, float)> GetActorLocationAsync(string endpoint, string actorPath)
+        {
+            var payload = new
+            {
+                objectPath = actorPath,
+                functionName = "K2_GetActorLocation",
+            };
+
+            var jsonBody = JsonSerializer.Serialize(payload);
+            //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var doc = JsonDocument.Parse(responseBody);
+                var root = doc.RootElement.GetProperty("ReturnValue");
+
+                float x = root.GetProperty("X").GetSingle();
+                float y = root.GetProperty("Y").GetSingle();
+                float z = root.GetProperty("Z").GetSingle();
+                return (true, x, y, z);
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "HTTP request failed");
+                return (false, 0, 0, 0);
+            }
+
+        }
     }
 }
-*/
