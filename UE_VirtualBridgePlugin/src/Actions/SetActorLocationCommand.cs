@@ -1,56 +1,140 @@
-namespace Loupedeck.UE_VirtualBridgePlugin.Actions
+namespace Loupedeck.UE_VirtualBridgePlugin
 {
     using System;
     using System.IO;
+    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
 
     using Loupedeck;
-    using Loupedeck.UE_VirtualBridgePlugin.Services;
 
     public class SetActorLocation : PluginDynamicCommand
     {
-        private readonly UnrealRemoteService _unreal;
+        private static readonly HttpClient client = new HttpClient();
         float x, y, z;
+        string endpoint;
 
-        public SetActorLocation(UnrealRemoteService unreal)
+
+        public SetActorLocation()
             : base(displayName: "Set Location",
                    description: "Set location to new XYZ coordinate.",
                    groupName: "Unreal")
         {
-            _unreal = unreal;
+            // Constructor left clean—no file I/O here
+            // Load config.json at runtime
+            try
+            {
+                var configText = File.ReadAllText("config.json");
+                using var doc = JsonDocument.Parse(configText);
+                string fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+                endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
+
+                if (string.IsNullOrWhiteSpace(endpoint))
+                {
+                    this.Log.Error("UnrealEndpoint not set in config.json");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "Failed to load config.json");
+                return;
+            }
+
         }
 
         // On button press
         protected override void RunCommand(string actionParameter)
-        {
+        {            
             // Hardcoded actor path and coordinates for now
             var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
+            
 
+            // Fire-and-forget async task
             Task.Run(async () =>
             {
-                // Here you call your service, not handle HttpClient yourself
-                var (success, x, y, z) = await _unreal.GetActorLocationAsync(actorPath);
-
+                var (data, x, y, z) = await GetActorLocationAsync(endpoint, actorPath);
+                var success = await UpdateActorLocationAsync(endpoint, actorPath, x, y, z + 10f);
                 if (success)
-                {
-                    this.Log.Info($"Actor location: X={x}, Y={y}, Z={z}");
-
-                    // Example: move actor down 100 units
-                    var moved = await _unreal.UpdateActorLocationAsync(actorPath, x, y, z - 100f);
-
-                    if (moved)
-                        this.Log.Info("Actor moved successfully");
-                    else
-                        this.Log.Error("Failed to move actor");
-                }
+                    this.Log.Info("Actor location updated");
                 else
-                {
-                    this.Log.Error("Failed to get actor location");
-                }
+                    this.Log.Error("Failed to update actor location.");
             });
+        }
+
+        private async Task<bool> UpdateActorLocationAsync(string endpoint, string actorPath, float x, float y, float z)
+        {
+            var payload = new
+            {
+                objectPath = actorPath,
+                functionName = "SetActorLocation",
+                parameters = new
+                {
+                    NewLocation = new { x, y, z },
+                    bSweep = false
+                },
+                generateTransaction = true
+            };
+
+
+            var jsonBody = JsonSerializer.Serialize(payload);
+            //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                this.Log.Info($"Unreal responded: {responseBody}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "HTTP request failed");
+                return false;
+            }
+        }
+
+        private async Task<(bool, float, float, float)> GetActorLocationAsync(string endpoint, string actorPath)
+        {
+            var payload = new
+            {
+                objectPath = actorPath,
+                functionName = "K2_GetActorLocation",
+            };
+
+            var jsonBody = JsonSerializer.Serialize(payload);
+            //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var doc = JsonDocument.Parse(responseBody);
+                var root = doc.RootElement.GetProperty("ReturnValue");
+
+                float x = root.GetProperty("X").GetSingle();
+                float y = root.GetProperty("Y").GetSingle();
+                float z = root.GetProperty("Z").GetSingle();
+                return (true, x, y, z);
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "HTTP request failed");
+                return (false, 0, 0, 0);
+            }
+
         }
 
         // Display coordinates on the button

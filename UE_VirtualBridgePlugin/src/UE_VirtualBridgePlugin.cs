@@ -38,8 +38,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin
             var configService = new ConfigService();
             var client = new NetworkClient(configService.UnrealEndpoint);
 
-            // Initialize Unreal service once
-            var unrealService = new UnrealRemoteService(client);
+            
         }
 
         // This method is called when the plugin is unloaded.
