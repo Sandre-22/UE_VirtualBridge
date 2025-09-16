@@ -19,7 +19,7 @@
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
         public PosZ_Adjustment()
-    : base(displayName: "pZ", description: "Adjusts actor's Z position by 1 tick", groupName: "Unreal", hasReset: true)
+    : base(displayName: "pZ", description: "Adjusts actor's Z position by 1 tick", groupName: "Unreal###Location", hasReset: true)
         {
             this.ConfigCall();
         }
