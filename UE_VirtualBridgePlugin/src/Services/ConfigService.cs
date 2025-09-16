@@ -7,12 +7,9 @@ public class ConfigService
 
     public ConfigService(string configFile = "config.json")
     {
-
-        
         var configText = File.ReadAllText(configFile);
         using var doc = JsonDocument.Parse(configText);
         UnrealEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString()
                           ?? UnrealEndpoint;
-        
     }
 }
