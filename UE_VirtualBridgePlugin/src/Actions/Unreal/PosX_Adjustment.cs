@@ -11,16 +11,18 @@
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class PosY_Adjustment : PluginDynamicAdjustment
+    public class PosX_Adjustment : PluginDynamicAdjustment
     {
         // TODO: make not hard coded
         string actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
 
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
-        public PosY_Adjustment()
-    : base(displayName: "pY", description: "Adjusts actor's Y position by 1 tick", groupName: "Unreal###Location", hasReset: true)
+        string pX;
+        public PosX_Adjustment()
+    : base(displayName: "pX", description: "Adjusts actor's X position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true)
         {
+            _unreal.ConfigService();
             this.ConfigCall();
         }
 
@@ -29,9 +31,11 @@
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x + diff, y, z);
                 if (success)
+                {
                     this.Log.Info("Actor location updated");
+                }
                 else
                     this.Log.Error("Failed to update actor location.");
             });
@@ -44,9 +48,11 @@
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
+                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, 0f, y, z);  // TODO, instead of 0f, can save reset to another value
                 if (success)
+                {
                     this.Log.Info("Actor location updated");
+                }
                 else
                     this.Log.Error("Failed to update actor location.");
             });

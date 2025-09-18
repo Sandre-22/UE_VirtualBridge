@@ -19,8 +19,9 @@
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
         public rotZ_Adjustment()
-    : base(displayName: "Yaw", description: "Adjusts actor's Z rotation by 1 tick", groupName: "Unreal###Rotation", hasReset: true)
+    : base(displayName: "Yaw", description: "Adjusts actor's Z rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true)
         {
+            //_unreal.ConfigService();
             this.ConfigCall();
         }
 
@@ -28,12 +29,12 @@
         {
             Task.Run(async () =>
             {
-                var (data, pitch, roll, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, pitch, roll, yaw + diff);
+                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch, yaw + diff);
                 if (success)
-                    this.Log.Info("Actor location updated");
+                    this.Log.Info("Actor rotation updated");
                 else
-                    this.Log.Error("Failed to update actor location.");
+                    this.Log.Error("Failed to update actor rotation.");
             });
         }
 
@@ -43,12 +44,12 @@
             var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
             Task.Run(async () =>
             {
-                var (data, pitch, roll, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, pitch, roll, 0f);  // TODO, instead of 0f, can save reset to another value
+                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch, 0f);  // TODO, instead of 0f, can save reset to another value
                 if (success)
-                    this.Log.Info("Actor location updated");
+                    this.Log.Info("Actor rotation updated");
                 else
-                    this.Log.Error("Failed to update actor location.");
+                    this.Log.Error("Failed to update actor rotation.");
             });
             this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
         }

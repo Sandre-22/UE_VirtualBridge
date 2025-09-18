@@ -11,16 +11,17 @@
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class PosZ_Adjustment : PluginDynamicAdjustment
+    public class PosY_Adjustment : PluginDynamicAdjustment
     {
         // TODO: make not hard coded
         string actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
 
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
-        public PosZ_Adjustment()
-    : base(displayName: "pZ", description: "Adjusts actor's Z position by 1 tick", groupName: "Unreal###Location", hasReset: true)
+        public PosY_Adjustment()
+    : base(displayName: "pY", description: "Adjusts actor's Y position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true)
         {
+            _unreal.ConfigService();
             this.ConfigCall();
         }
 
@@ -29,7 +30,7 @@
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
+                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
                 if (success)
                     this.Log.Info("Actor location updated");
                 else
@@ -44,7 +45,7 @@
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, 0f);  // TODO, instead of 0f, can save reset to another value
+                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
                 if (success)
                     this.Log.Info("Actor location updated");
                 else
@@ -52,7 +53,6 @@
             });
             this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
         }
-
         // ASYNC API CALLS
         private void ConfigCall()
         {

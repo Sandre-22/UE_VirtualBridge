@@ -1,6 +1,7 @@
 namespace Loupedeck.UE_VirtualBridgePlugin.Services
 {
     using System;
+    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Text.Json;
@@ -11,7 +12,9 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
     public class UnrealRemoteService
     {
         private static readonly HttpClient client = new HttpClient();
+
         string _endpoint;
+        public string UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
 
         public UnrealRemoteService()
         {
@@ -138,7 +141,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 functionName = "SetActorRotation",
                 parameters = new
                 {
-                    NewLocation = new { roll, pitch, yaw },
+                    NewRotation = new { roll, pitch, yaw },
                     bSweep = false
                 },
                 generateTransaction = true
@@ -186,7 +189,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
             var payload = new
             {
                 objectPath = actorPath,
-                functionName = "K2_GetActorLocation",
+                functionName = "K2_GetActorRotation",
             };
 
             var jsonBody = JsonSerializer.Serialize(payload);
@@ -216,6 +219,28 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 return (false, 0, 0, 0);
             }
 
+        }
+
+        public void ConfigService()
+        {
+            try
+            {
+                var configText = File.ReadAllText("config.json");
+                using var doc = JsonDocument.Parse(configText);
+                var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+                _endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
+
+                if (string.IsNullOrWhiteSpace(_endpoint))
+                {
+                    //this.Log.Error("UnrealEndpoint not set in config.json");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                //this.Log.Error(ex, "Failed to load config.json");
+                return;
+            }
         }
     }
 }

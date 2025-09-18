@@ -11,16 +11,17 @@
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class PosX_Adjustment : PluginDynamicAdjustment
+    public class rotX_Adjustment : PluginDynamicAdjustment
     {
         // TODO: make not hard coded
         string actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
 
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
-        public PosX_Adjustment()
-    : base(displayName: "pX", description: "Adjusts actor's X position by 1 tick", groupName: "Unreal###Location", hasReset: true)
+        public rotX_Adjustment()
+    : base(displayName: "Roll", description: "Adjusts actor's X rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true)
         {
+            _unreal.ConfigService();
             this.ConfigCall();
         }
 
@@ -28,12 +29,12 @@
         {
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x + diff, y, z);
+                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, roll + diff, pitch, yaw);
                 if (success)
-                    this.Log.Info("Actor location updated");
+                    this.Log.Info("Actor rotation updated");
                 else
-                    this.Log.Error("Failed to update actor location.");
+                    this.Log.Error("Failed to update actor rotation.");
             });
         }
 
@@ -43,12 +44,12 @@
             var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, 0f, y, z);  // TODO, instead of 0f, can save reset to another value
+                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, 0f, pitch, yaw);  // TODO, instead of 0f, can save reset to another value
                 if (success)
-                    this.Log.Info("Actor location updated");
+                    this.Log.Info("Actor rotation updated");
                 else
-                    this.Log.Error("Failed to update actor location.");
+                    this.Log.Error("Failed to update actor rotation.");
             });
             this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
         }
