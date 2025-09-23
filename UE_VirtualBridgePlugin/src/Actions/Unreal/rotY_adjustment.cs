@@ -14,15 +14,18 @@
     public class rotY_Adjustment : PluginDynamicAdjustment
     {
         // TODO: make not hard coded
-        string actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
+        string actorPath;
 
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
+
         public rotY_Adjustment()
     : base(displayName: "Pitch", description: "Adjusts actor's Y rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true)
         {
-            //_unreal.ConfigService();
+            _unreal.ConfigService();
             this.ConfigCall();
+
+            actorPath = _unreal._actor;
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
@@ -40,8 +43,6 @@
 
         protected override void RunCommand(String actionParameter)
         {
-            // Hardcoded actor path and coordinates for now
-            var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
             Task.Run(async () =>
             {
                 var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);

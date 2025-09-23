@@ -13,8 +13,12 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
     {
         private static readonly HttpClient client = new HttpClient();
 
-        string _endpoint;
-        public string UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
+        String _endpoint;
+        public String UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
+
+        // TODO: Polling Unreal with API calls so this is not hardcoded
+        public String _actor = "/Game/Map.Map:PersistentLevel.StaticMeshActor_1";
+
 
         public UnrealRemoteService()
         {
@@ -230,7 +234,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
                 _endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
 
-                if (string.IsNullOrWhiteSpace(_endpoint))
+                if (String.IsNullOrWhiteSpace(_endpoint))
                 {
                     //this.Log.Error("UnrealEndpoint not set in config.json");
                     return;

@@ -14,7 +14,7 @@
     public class PosZ_Adjustment : PluginDynamicAdjustment
     {
         // TODO: make not hard coded
-        string actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
+        string actorPath;
 
         UnrealRemoteService _unreal = new UnrealRemoteService();
         string endpoint;
@@ -23,6 +23,8 @@
         {
             _unreal.ConfigService();
             this.ConfigCall();
+
+            actorPath = _unreal._actor;
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
@@ -40,8 +42,6 @@
 
         protected override void RunCommand(String actionParameter)
         {
-            // Hardcoded actor path and coordinates for now
-            var actorPath = "/Game/Maps/Main.Main:PersistentLevel.Cube_2";
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
