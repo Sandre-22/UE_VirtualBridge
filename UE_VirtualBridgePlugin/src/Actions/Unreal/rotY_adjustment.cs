@@ -25,11 +25,12 @@
             _unreal.ConfigService();
             this.ConfigCall();
 
-            actorPath = _unreal._actor;
+            //actorPath = _unreal.FetchActor();
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
+            actorPath = _unreal.FetchActor();
             Task.Run(async () =>
             {
                 var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
@@ -43,6 +44,7 @@
 
         protected override void RunCommand(String actionParameter)
         {
+            actorPath = _unreal.FetchActor();
             Task.Run(async () =>
             {
                 var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);

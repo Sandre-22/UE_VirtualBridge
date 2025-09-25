@@ -9,6 +9,8 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
     using Loupedeck;
 
+    using Newtonsoft.Json;
+
     public class UnrealRemoteService
     {
         private static readonly HttpClient client = new HttpClient();
@@ -17,11 +19,19 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         public String UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
 
         // TODO: Polling Unreal with API calls so this is not hardcoded
-        public String _actor = "/Game/Map.Map:PersistentLevel.StaticMeshActor_1";
-
+        // public String _actor = "/Game/Map.Map:PersistentLevel.StaticMeshActor_1";
+        public String _actor;
 
         public UnrealRemoteService()
         {
+        }
+
+        public String FetchActor()
+        {
+            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");
+            var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+            this._actor = selection.primarySelection;
+            return this._actor;
         }
 
         public async Task<bool> UpdateActorLocationAsync(string endpoint, string actorPath, float x, float y, float z)
@@ -52,7 +62,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
             };
 
 
-            var jsonBody = JsonSerializer.Serialize(payload);
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
             //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
             {
@@ -96,7 +106,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 functionName = "K2_GetActorLocation",
             };
 
-            var jsonBody = JsonSerializer.Serialize(payload);
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
             //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Put, _endpoint)
             {
@@ -152,7 +162,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
             };
 
 
-            var jsonBody = JsonSerializer.Serialize(payload);
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
             //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Put, endpoint)
             {
@@ -196,7 +206,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 functionName = "K2_GetActorRotation",
             };
 
-            var jsonBody = JsonSerializer.Serialize(payload);
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
             //var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Put, _endpoint)
             {

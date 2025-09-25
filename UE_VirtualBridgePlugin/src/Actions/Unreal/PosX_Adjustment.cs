@@ -26,11 +26,11 @@
         {
             _unreal.ConfigService();
             this.ConfigCall();
-            actorPath = _unreal._actor;
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
+            actorPath = _unreal.FetchActor();
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
@@ -46,6 +46,7 @@
 
         protected override void RunCommand(String actionParameter)
         {
+            actorPath = _unreal.FetchActor();
             Task.Run(async () =>
             {
                 var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
