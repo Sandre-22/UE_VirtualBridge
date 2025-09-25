@@ -22,6 +22,8 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         // public String _actor = "/Game/Map.Map:PersistentLevel.StaticMeshActor_1";
         public String _actor;
 
+        public Int32 _multiselect = -1;
+
         public UnrealRemoteService()
         {
         }

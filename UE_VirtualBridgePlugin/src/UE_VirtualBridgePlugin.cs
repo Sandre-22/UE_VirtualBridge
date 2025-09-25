@@ -14,7 +14,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin
 
     public class UE_VirtualBridgePlugin : Plugin
     {
-        public UnrealRemoteService UnrealService { get; private set; }
+        public static UnrealRemoteService UnrealService { get; private set; }
 
         // Gets a value indicating whether this is an API-only plugin.
         public override Boolean UsesApplicationApiOnly => true;
@@ -38,6 +38,8 @@ namespace Loupedeck.UE_VirtualBridgePlugin
             var configService = new ConfigService();
             var client = new NetworkClient(configService.UnrealEndpoint);
 
+            UnrealService = new UnrealRemoteService();
+            UnrealService.ConfigService();
             
         }
 

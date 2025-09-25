@@ -2,9 +2,6 @@
 {
     using System;
     using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
 
@@ -13,55 +10,94 @@
 
     public class PosX_Adjustment : PluginDynamicAdjustment
     {
-        
+        private UnrealRemoteService _unreal => UE_VirtualBridgePlugin.UnrealService;
+        private string endpoint;
 
-        UnrealRemoteService _unreal = new UnrealRemoteService();
-        string endpoint;
-
-        // TODO: make not hard coded
-        String actorPath;
-
-        public PosX_Adjustment()
-    : base(displayName: "pX", description: "Adjusts actor's X position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true)
+        public PosX_Adjustment() : base(
+            displayName: "pX",
+            description: "Adjusts actor's X position by 1 tick",
+            groupName: "Unreal###Transform###Location",
+            hasReset: true)
         {
-            _unreal.ConfigService();
+            this.Log.Info("PosX_Adjustment constructor called");
             this.ConfigCall();
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            actorPath = _unreal.FetchActor();
+            if (_unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = _unreal.FetchActor();
+            if (string.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x + diff, y, z);
+                var (success, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
                 if (success)
                 {
-                    this.Log.Info("Actor location updated");
+                    var updateSuccess = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x + diff, y, z);
+                    if (updateSuccess)
+                    {
+                        this.Log.Info($"Actor X position updated: {x + diff}");
+                    }
+                    else
+                    {
+                        this.Log.Error("Failed to update actor location");
+                    }
                 }
                 else
-                    this.Log.Error("Failed to update actor location.");
+                {
+                    this.Log.Error("Failed to get current actor location");
+                }
             });
         }
 
         protected override void RunCommand(String actionParameter)
         {
-            actorPath = _unreal.FetchActor();
+            if (_unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = _unreal.FetchActor();
+            if (string.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, 0f, y, z);  // TODO, instead of 0f, can save reset to another value
+                var (success, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
                 if (success)
                 {
-                    this.Log.Info("Actor location updated");
+                    var resetSuccess = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, 0f, y, z);
+                    if (resetSuccess)
+                    {
+                        this.Log.Info("Actor X position reset to 0");
+                        this.AdjustmentValueChanged();
+                    }
+                    else
+                    {
+                        this.Log.Error("Failed to reset actor location");
+                    }
                 }
                 else
-                    this.Log.Error("Failed to update actor location.");
+                {
+                    this.Log.Error("Failed to get current actor location");
+                }
             });
-            this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
         }
 
-        // ASYNC API CALLS
         private void ConfigCall()
         {
             try
@@ -74,13 +110,11 @@
                 if (string.IsNullOrWhiteSpace(endpoint))
                 {
                     this.Log.Error("UnrealEndpoint not set in config.json");
-                    return;
                 }
             }
             catch (Exception ex)
             {
                 this.Log.Error(ex, "Failed to load config.json");
-                return;
             }
         }
     }
