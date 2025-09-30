@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions
+﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions.Unreal.TransformAdjustments
 {
     using System;
     using System.IO;
@@ -29,7 +29,7 @@
                 if (this.unreal._multiselect)
                 {
                     this.Log.Info($"Multi-Select mode: {this.unreal._actorcount} actors");
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure
@@ -113,7 +113,7 @@
 
                 if (this.unreal._multiselect)
                 {
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure

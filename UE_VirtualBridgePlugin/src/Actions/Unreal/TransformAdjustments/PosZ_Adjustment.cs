@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions
+﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions.Unreal.TransformAdjustments
 {
     using System;
     using System.IO;
@@ -11,13 +11,13 @@
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class PosY_Adjustment : PluginDynamicAdjustment
+    public class PosZ_Adjustment : PluginDynamicAdjustment
     {
         private String endpoint;
 
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
-        public PosY_Adjustment()
-    : base(displayName: "pY", description: "Adjusts actor's Y position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true) => this.ConfigCall();
+        public PosZ_Adjustment()
+    : base(displayName: "pZ", description: "Adjusts actor's Z position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true) => this.ConfigCall();
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
@@ -28,7 +28,7 @@
                 if (this.unreal._multiselect)
                 {
                     this.Log.Info($"Multi-Select mode: {this.unreal._actorcount} actors");
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure
@@ -40,10 +40,10 @@
                                 var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                    var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor Y position updated: {y + diff} for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor Z position updated: {z + diff} for {actorPath}");
                                     }
                                     else
                                     {
@@ -76,7 +76,7 @@
                             var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
                                 if (updateSuccess)
                                 {
                                     this.Log.Info($"Actor Y position updated: {y + diff}");
@@ -112,7 +112,7 @@
 
                 if (this.unreal._multiselect)
                 {
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure
@@ -124,10 +124,10 @@
                                 var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
+                                    var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, 0f);  // TODO, instead of 0f, can save reset to another value
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor Y position updated: 0f for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor Z position updated: 0f for {actorPath}");
                                     }
                                     else
                                     {
@@ -160,10 +160,10 @@
                             var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await this.unreal.UpdateActorLocationAsync(localEndpoint, actorPath, x, 0f, z);
+                                var updateSuccess = await this.unreal.UpdateActorLocationAsync(localEndpoint, actorPath, x, y, 0f);
                                 if (updateSuccess)
                                 {
-                                    this.Log.Info($"Actor Y position updated: 0f");
+                                    this.Log.Info($"Actor Z position updated: 0f");
                                 }
                                 else
                                 {
@@ -187,6 +187,7 @@
                 this.Log.Error(ex, "Error in RunCommand");
             }
         }
+
         // ASYNC API CALLS
         private void ConfigCall()
         {

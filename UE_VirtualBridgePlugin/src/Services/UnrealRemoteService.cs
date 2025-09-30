@@ -27,6 +27,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public Int32 _actorindex = 0;
         public Boolean _multiselect = false;
+        public Double _transmult = 1f;
 
         public UnrealRemoteService()
         {

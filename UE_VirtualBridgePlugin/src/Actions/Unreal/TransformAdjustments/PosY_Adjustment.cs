@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions
+﻿namespace Loupedeck.UE_VirtualBridgePlugin.Actions.Unreal.TransformAdjustments
 {
     using System;
     using System.IO;
@@ -11,14 +11,13 @@
     using Loupedeck;
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class rotY_Adjustment : PluginDynamicAdjustment
+    public class PosY_Adjustment : PluginDynamicAdjustment
     {
         private String endpoint;
 
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
-
-        public rotY_Adjustment()
-    : base(displayName: "Pitch", description: "Adjusts actor's Y rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true) => this.ConfigCall();
+        public PosY_Adjustment()
+    : base(displayName: "pY", description: "Adjusts actor's Y position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true) => this.ConfigCall();
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
@@ -29,7 +28,7 @@
                 if (this.unreal._multiselect)
                 {
                     this.Log.Info($"Multi-Select mode: {this.unreal._actorcount} actors");
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure
@@ -38,22 +37,22 @@
                         {
                             try
                             {
-                                var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                                var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                    var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: {pitch + diff} for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor Y position updated: {y + diff} for {actorPath}");
                                     }
                                     else
                                     {
-                                        this.Log.Error($"==MULTI== Failed to update actor rotation for {actorPath}");
+                                        this.Log.Error($"==MULTI== Failed to update actor location for {actorPath}");
                                     }
                                 }
                                 else
                                 {
-                                    this.Log.Error($"==MULTI== Failed to get current actor rotation for {actorPath}");
+                                    this.Log.Error($"==MULTI== Failed to get current actor location for {actorPath}");
                                 }
                             }
                             catch (Exception taskEx)
@@ -74,22 +73,22 @@
                     {
                         try
                         {
-                            var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                            var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
                                 if (updateSuccess)
                                 {
-                                    this.Log.Info($"Actor PITCH rotation updated: {pitch + diff}");
+                                    this.Log.Info($"Actor Y position updated: {y + diff}");
                                 }
                                 else
                                 {
-                                    this.Log.Error("Failed to update actor rotation");
+                                    this.Log.Error("Failed to update actor location");
                                 }
                             }
                             else
                             {
-                                this.Log.Error("Failed to get current actor rotation");
+                                this.Log.Error("Failed to get current actor location");
                             }
                         }
                         catch (Exception taskEx)
@@ -113,7 +112,7 @@
 
                 if (this.unreal._multiselect)
                 {
-                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    for (var i = 0; i < this.unreal._actorcount; i++)
                     {
                         var actorPath = this.unreal._multiactors[i];
                         var localEndpoint = this.endpoint; // Capture endpoint for closure
@@ -122,22 +121,22 @@
                         {
                             try
                             {
-                                var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                                var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, 0f, yaw);  // TODO, instead of 0f, can save reset to another value
+                                    var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: 0f for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor Y position updated: 0f for {actorPath}");
                                     }
                                     else
                                     {
-                                        this.Log.Error($"==MULTI== Failed to update actor rotation for {actorPath}");
+                                        this.Log.Error($"==MULTI== Failed to update actor location for {actorPath}");
                                     }
                                 }
                                 else
                                 {
-                                    this.Log.Error($"==MULTI== Failed to get current actor rotation for {actorPath}");
+                                    this.Log.Error($"==MULTI== Failed to get current actor location for {actorPath}");
                                 }
                             }
                             catch (Exception taskEx)
@@ -158,22 +157,22 @@
                     {
                         try
                         {
-                            var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                            var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, 0f, yaw);  // TODO, instead of 0f, can save reset to another value
+                                var updateSuccess = await this.unreal.UpdateActorLocationAsync(localEndpoint, actorPath, x, 0f, z);
                                 if (updateSuccess)
                                 {
-                                    this.Log.Info($"Actor PITCH rotation updated: 0f");
+                                    this.Log.Info($"Actor Y position updated: 0f");
                                 }
                                 else
                                 {
-                                    this.Log.Error("Failed to update actor rotation");
+                                    this.Log.Error("Failed to update actor location");
                                 }
                             }
                             else
                             {
-                                this.Log.Error("Failed to get current actor rotation");
+                                this.Log.Error("Failed to get current actor location");
                             }
                         }
                         catch (Exception taskEx)
