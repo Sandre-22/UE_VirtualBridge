@@ -13,25 +13,35 @@
 
     public class PosZ_Adjustment : PluginDynamicAdjustment
     {
-        // TODO: make not hard coded
-        string actorPath;
+        private String endpoint;
 
-        UnrealRemoteService _unreal = new UnrealRemoteService();
-        string endpoint;
+        private UnrealRemoteService GetUnrealService() => UE_VirtualBridgePlugin.UnrealService;
         public PosZ_Adjustment()
     : base(displayName: "pZ", description: "Adjusts actor's Z position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true)
         {
-            _unreal.ConfigService();
             this.ConfigCall();
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            actorPath = _unreal.FetchActor();
+            var unreal = this.GetUnrealService();
+            if (unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = unreal.FetchActor();
+            if (String.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
+                var (data, x, y, z) = await unreal.GetActorLocationAsync(endpoint, actorPath);
+                var success = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, z + diff);
                 if (success)
                     this.Log.Info("Actor location updated");
                 else
@@ -41,11 +51,24 @@
 
         protected override void RunCommand(String actionParameter)
         {
-            actorPath = _unreal.FetchActor();
+            var unreal = this.GetUnrealService();
+            if (unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = unreal.FetchActor();
+            if (String.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, x, y, z) = await _unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, 0f);  // TODO, instead of 0f, can save reset to another value
+                var (data, x, y, z) = await unreal.GetActorLocationAsync(endpoint, actorPath);
+                var success = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y, 0f);  // TODO, instead of 0f, can save reset to another value
                 if (success)
                     this.Log.Info("Actor location updated");
                 else

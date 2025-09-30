@@ -13,25 +13,35 @@
 
     public class rotX_Adjustment : PluginDynamicAdjustment
     {
-        // TODO: make not hard coded
-        string actorPath;
+        private String endpoint;
 
-        UnrealRemoteService _unreal = new UnrealRemoteService();
-        string endpoint;
+        private UnrealRemoteService GetUnrealService() => UE_VirtualBridgePlugin.UnrealService;
         public rotX_Adjustment()
     : base(displayName: "Roll", description: "Adjusts actor's X rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true)
         {
-            _unreal.ConfigService();
             this.ConfigCall();
         }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            actorPath = _unreal.FetchActor();
+            var unreal = this.GetUnrealService();
+            if (unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = unreal.FetchActor();
+            if (String.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, roll + diff, pitch, yaw);
+                var (data, roll, pitch, yaw) = await unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await unreal.UpdateActorRotationAsync(endpoint, actorPath, roll + diff, pitch, yaw);
                 if (success)
                     this.Log.Info("Actor rotation updated");
                 else
@@ -41,11 +51,24 @@
 
         protected override void RunCommand(String actionParameter)
         {
-            actorPath = _unreal.FetchActor();
+            var unreal = this.GetUnrealService();
+            if (unreal == null)
+            {
+                this.Log.Error("UnrealService is not available");
+                return;
+            }
+
+            var actorPath = unreal.FetchActor();
+            if (String.IsNullOrEmpty(actorPath))
+            {
+                this.Log.Warning("No actor selected");
+                return;
+            }
+
             Task.Run(async () =>
             {
-                var (data, roll, pitch, yaw) = await _unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await _unreal.UpdateActorRotationAsync(endpoint, actorPath, 0f, pitch, yaw);  // TODO, instead of 0f, can save reset to another value
+                var (data, roll, pitch, yaw) = await unreal.GetActorRotationAsync(endpoint, actorPath);
+                var success = await unreal.UpdateActorRotationAsync(endpoint, actorPath, 0f, pitch, yaw);  // TODO, instead of 0f, can save reset to another value
                 if (success)
                     this.Log.Info("Actor rotation updated");
                 else

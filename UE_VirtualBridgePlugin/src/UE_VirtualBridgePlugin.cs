@@ -35,11 +35,11 @@ namespace Loupedeck.UE_VirtualBridgePlugin
         // This method is called when the plugin is loaded.
         public override void Load()
         {
-            var configService = new ConfigService();
-            var client = new NetworkClient(configService.UnrealEndpoint);
+            //var configService = new ConfigService();
+            //var client = new NetworkClient(configService.UnrealEndpoint);
 
             UnrealService = new UnrealRemoteService();
-            UnrealService.ConfigService();
+            //UnrealService.ConfigService();
             
         }
 
