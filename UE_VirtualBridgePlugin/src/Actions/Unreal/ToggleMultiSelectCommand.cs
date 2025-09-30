@@ -6,18 +6,19 @@
 
     public class ToggleMultiSelectCommand : PluginDynamicCommand
     {
-        readonly UnrealRemoteService _unreal = UE_VirtualBridgePlugin.UnrealService;
+        private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
         public ToggleMultiSelectCommand()
-    : base(displayName: "Toggle Multi Select", description: "Toggles audio mute state", groupName: "Unreal")
+    : base(displayName: "Toggle Multi Select", description: "Toggles the ability to move multiple actors at once.", groupName: "Unreal")
         {
         }
 
         protected override void RunCommand(String actionParameter)
         {
-            this._unreal._multiselect *= -1;
+            this.unreal._multiselect = !this.unreal._multiselect;
+            this.ActionImageChanged();
         }
 
         protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>
-            $"Toggle MultiSelect{Environment.NewLine}{this._unreal._multiselect}";
+            $"MultiSelect{Environment.NewLine}{this.unreal._multiselect}";
     }
 }

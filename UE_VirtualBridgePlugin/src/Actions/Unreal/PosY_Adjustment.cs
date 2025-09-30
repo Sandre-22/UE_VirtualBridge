@@ -15,63 +15,177 @@
     {
         private String endpoint;
 
-        private UnrealRemoteService GetUnrealService() => UE_VirtualBridgePlugin.UnrealService;
+        private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
         public PosY_Adjustment()
     : base(displayName: "pY", description: "Adjusts actor's Y position by 1 tick", groupName: "Unreal###Transform###Location", hasReset: true) => this.ConfigCall();
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            var unreal = this.GetUnrealService();
-            if (unreal == null)
+            try
             {
-                this.Log.Error("UnrealService is not available");
-                return;
-            }
+                this.unreal.GetSelections();
 
-            var actorPath = unreal.FetchActor();
-            if (String.IsNullOrEmpty(actorPath))
-            {
-                this.Log.Warning("No actor selected");
-                return;
-            }
+                if (this.unreal._multiselect)
+                {
+                    this.Log.Info($"Multi-Select mode: {this.unreal._actorcount} actors");
+                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    {
+                        var actorPath = this.unreal._multiactors[i];
+                        var localEndpoint = this.endpoint; // Capture endpoint for closure
 
-            Task.Run(async () =>
-            {
-                var (data, x, y, z) = await unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
-                if (success)
-                    this.Log.Info("Actor location updated");
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
+                                if (success)
+                                {
+                                    var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                    if (updateSuccess)
+                                    {
+                                        this.Log.Info($"==MULTI== Actor Y position updated: {y + diff} for {actorPath}");
+                                    }
+                                    else
+                                    {
+                                        this.Log.Error($"==MULTI== Failed to update actor location for {actorPath}");
+                                    }
+                                }
+                                else
+                                {
+                                    this.Log.Error($"==MULTI== Failed to get current actor location for {actorPath}");
+                                }
+                            }
+                            catch (Exception taskEx)
+                            {
+                                this.Log.Error(taskEx, "Error in multi-select task");
+                            }
+                        });
+                    }
+                }
                 else
-                    this.Log.Error("Failed to update actor location.");
-            });
+                {
+                    this.Log.Info($"Single-select mode: {this.unreal._actor}");
+
+                    var actorPath = this.unreal._actor;
+                    var localEndpoint = this.endpoint; // Capture endpoint for closure
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
+                            if (success)
+                            {
+                                var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                if (updateSuccess)
+                                {
+                                    this.Log.Info($"Actor Y position updated: {y + diff}");
+                                }
+                                else
+                                {
+                                    this.Log.Error("Failed to update actor location");
+                                }
+                            }
+                            else
+                            {
+                                this.Log.Error("Failed to get current actor location");
+                            }
+                        }
+                        catch (Exception taskEx)
+                        {
+                            this.Log.Error(taskEx, "Error in single-select task");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "Error in ApplyAdjustment");
+            }
         }
 
         protected override void RunCommand(String actionParameter)
         {
-            var unreal = this.GetUnrealService();
-            if (unreal == null)
+            try
             {
-                this.Log.Error("UnrealService is not available");
-                return;
-            }
+                this.unreal.GetSelections();
 
-            var actorPath = unreal.FetchActor();
-            if (String.IsNullOrEmpty(actorPath))
-            {
-                this.Log.Warning("No actor selected");
-                return;
-            }
+                if (this.unreal._multiselect)
+                {
+                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    {
+                        var actorPath = this.unreal._multiactors[i];
+                        var localEndpoint = this.endpoint; // Capture endpoint for closure
 
-            Task.Run(async () =>
-            {
-                var (data, x, y, z) = await unreal.GetActorLocationAsync(endpoint, actorPath);
-                var success = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
-                if (success)
-                    this.Log.Info("Actor location updated");
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
+                                if (success)
+                                {
+                                    var updateSuccess = await this.unreal.UpdateActorLocationAsync(endpoint, actorPath, x, 0f, z);  // TODO, instead of 0f, can save reset to another value
+                                    if (updateSuccess)
+                                    {
+                                        this.Log.Info($"==MULTI== Actor Y position updated: 0f for {actorPath}");
+                                    }
+                                    else
+                                    {
+                                        this.Log.Error($"==MULTI== Failed to update actor location for {actorPath}");
+                                    }
+                                }
+                                else
+                                {
+                                    this.Log.Error($"==MULTI== Failed to get current actor location for {actorPath}");
+                                }
+                            }
+                            catch (Exception taskEx)
+                            {
+                                this.Log.Error(taskEx, "Error in multi-select task");
+                            }
+                        });
+                    }
+                }
                 else
-                    this.Log.Error("Failed to update actor location.");
-            });
-            this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
+                {
+                    this.Log.Info($"Single-select mode: {this.unreal._actor}");
+
+                    var actorPath = this.unreal._actor;
+                    var localEndpoint = this.endpoint; // Capture endpoint for closure
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
+                            if (success)
+                            {
+                                var updateSuccess = await this.unreal.UpdateActorLocationAsync(localEndpoint, actorPath, x, 0f, z);
+                                if (updateSuccess)
+                                {
+                                    this.Log.Info($"Actor Y position updated: 0f");
+                                }
+                                else
+                                {
+                                    this.Log.Error("Failed to update actor location");
+                                }
+                            }
+                            else
+                            {
+                                this.Log.Error("Failed to get current actor location");
+                            }
+                        }
+                        catch (Exception taskEx)
+                        {
+                            this.Log.Error(taskEx, "Error in single-select task");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "Error in RunCommand");
+            }
         }
         // ASYNC API CALLS
         private void ConfigCall()

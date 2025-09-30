@@ -10,6 +10,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
     using Loupedeck;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     public class UnrealRemoteService
     {
@@ -18,11 +19,12 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         String _endpoint;
         public String UnrealEndpoint { get; private set; } = "http://localhost:30010"; // fallback
 
-        // TODO: Polling Unreal with API calls so this is not hardcoded
-        // public String _actor = "/Game/Map.Map:PersistentLevel.StaticMeshActor_1";
         public String _actor;
+        public String[] _multiactors;  // make a fixed set of slots?
+        public Int32 _actorcount;
+        public Boolean _hasselection;
 
-        public Int32 _multiselect = -1;
+        public Boolean _multiselect = false;
 
         public UnrealRemoteService()
         {
@@ -30,10 +32,38 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public String FetchActor()
         {
-            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");
+            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
             var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
             this._actor = selection.primarySelection;
             return this._actor;
+        }
+
+        public String[] ActorGroup()
+        {
+            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
+            var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+            this._multiactors = selection.selectedActors;
+            return this._multiactors;
+        }
+
+        public Int32 GetActorCount()
+        {
+            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
+            var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+            this._actorcount = selection.count;
+            return this._actorcount;
+        }
+
+        public void GetSelections()
+        {
+            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
+            var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+            this._actor = selection.primarySelection;
+            this._multiactors = ((JArray)selection.selectedActors).ToObject<string[]>();
+            this._actorcount = selection.count;
+            this._hasselection = selection.hasSelection;
+            //this._multiselect = this._actorcount > 1;
+            return;
         }
 
         public async Task<bool> UpdateActorLocationAsync(string endpoint, string actorPath, float x, float y, float z)
@@ -86,7 +116,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
             }
         }
 
-        public async Task<(bool success, float x, float y, float z)> GetActorLocationAsync(string endpoint, string actorPath)
+        public async Task<(bool success, float x, float y, float z)> GetActorLocationAsync(String endpoint, String actorPath)
         /*
          * Finds the XYZ coordinates in relative space for an actor's location.
          * 

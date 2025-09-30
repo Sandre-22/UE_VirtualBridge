@@ -15,69 +15,178 @@
     {
         private String endpoint;
 
-        private UnrealRemoteService GetUnrealService() => UE_VirtualBridgePlugin.UnrealService;
+        private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
 
         public rotY_Adjustment()
-    : base(displayName: "Pitch", description: "Adjusts actor's Y rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true)
-        {
-            this.ConfigCall();
-
-            //actorPath = _unreal.FetchActor();
-        }
+    : base(displayName: "Pitch", description: "Adjusts actor's Y rotation by 1 tick", groupName: "Unreal###Transform###Rotation", hasReset: true) => this.ConfigCall();
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            var unreal = this.GetUnrealService();
-            if (unreal == null)
+            try
             {
-                this.Log.Error("UnrealService is not available");
-                return;
-            }
+                this.unreal.GetSelections();
 
-            var actorPath = unreal.FetchActor();
-            if (String.IsNullOrEmpty(actorPath))
-            {
-                this.Log.Warning("No actor selected");
-                return;
-            }
+                if (this.unreal._multiselect)
+                {
+                    this.Log.Info($"Multi-Select mode: {this.unreal._actorcount} actors");
+                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    {
+                        var actorPath = this.unreal._multiactors[i];
+                        var localEndpoint = this.endpoint; // Capture endpoint for closure
 
-            Task.Run(async () =>
-            {
-                var (data, roll, pitch, yaw) = await unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
-                if (success)
-                    this.Log.Info("Actor rotation updated");
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                                if (success)
+                                {
+                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                    if (updateSuccess)
+                                    {
+                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: {pitch + diff} for {actorPath}");
+                                    }
+                                    else
+                                    {
+                                        this.Log.Error($"==MULTI== Failed to update actor rotation for {actorPath}");
+                                    }
+                                }
+                                else
+                                {
+                                    this.Log.Error($"==MULTI== Failed to get current actor rotation for {actorPath}");
+                                }
+                            }
+                            catch (Exception taskEx)
+                            {
+                                this.Log.Error(taskEx, "Error in multi-select task");
+                            }
+                        });
+                    }
+                }
                 else
-                    this.Log.Error("Failed to update actor rotation.");
-            });
+                {
+                    this.Log.Info($"Single-select mode: {this.unreal._actor}");
+
+                    var actorPath = this.unreal._actor;
+                    var localEndpoint = this.endpoint; // Capture endpoint for closure
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                            if (success)
+                            {
+                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                if (updateSuccess)
+                                {
+                                    this.Log.Info($"Actor PITCH rotation updated: {pitch + diff}");
+                                }
+                                else
+                                {
+                                    this.Log.Error("Failed to update actor rotation");
+                                }
+                            }
+                            else
+                            {
+                                this.Log.Error("Failed to get current actor rotation");
+                            }
+                        }
+                        catch (Exception taskEx)
+                        {
+                            this.Log.Error(taskEx, "Error in single-select task");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "Error in ApplyAdjustment");
+            }
         }
 
         protected override void RunCommand(String actionParameter)
         {
-            var unreal = this.GetUnrealService();
-            if (unreal == null)
+            try
             {
-                this.Log.Error("UnrealService is not available");
-                return;
-            }
+                this.unreal.GetSelections();
 
-            var actorPath = unreal.FetchActor();
-            if (String.IsNullOrEmpty(actorPath))
-            {
-                this.Log.Warning("No actor selected");
-                return;
-            }
+                if (this.unreal._multiselect)
+                {
+                    for (int i = 0; i < this.unreal._actorcount; i++)
+                    {
+                        var actorPath = this.unreal._multiactors[i];
+                        var localEndpoint = this.endpoint; // Capture endpoint for closure
 
-            Task.Run(async () =>
-            {
-                var (data, roll, pitch, yaw) = await unreal.GetActorRotationAsync(endpoint, actorPath);
-                var success = await unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, 0f, yaw);  // TODO, instead of 0f, can save reset to another value
-                if (success)
-                    this.Log.Info("Actor rotation updated");
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                                if (success)
+                                {
+                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, 0f, yaw);  // TODO, instead of 0f, can save reset to another value
+                                    if (updateSuccess)
+                                    {
+                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: 0f for {actorPath}");
+                                    }
+                                    else
+                                    {
+                                        this.Log.Error($"==MULTI== Failed to update actor rotation for {actorPath}");
+                                    }
+                                }
+                                else
+                                {
+                                    this.Log.Error($"==MULTI== Failed to get current actor rotation for {actorPath}");
+                                }
+                            }
+                            catch (Exception taskEx)
+                            {
+                                this.Log.Error(taskEx, "Error in multi-select task");
+                            }
+                        });
+                    }
+                }
                 else
-                    this.Log.Error("Failed to update actor rotation.");
-            });
-            this.AdjustmentValueChanged(); // Notify the Plugin service that the adjustment value has changed.
+                {
+                    this.Log.Info($"Single-select mode: {this.unreal._actor}");
+
+                    var actorPath = this.unreal._actor;
+                    var localEndpoint = this.endpoint; // Capture endpoint for closure
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
+                            if (success)
+                            {
+                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, 0f, yaw);  // TODO, instead of 0f, can save reset to another value
+                                if (updateSuccess)
+                                {
+                                    this.Log.Info($"Actor PITCH rotation updated: 0f");
+                                }
+                                else
+                                {
+                                    this.Log.Error("Failed to update actor rotation");
+                                }
+                            }
+                            else
+                            {
+                                this.Log.Error("Failed to get current actor rotation");
+                            }
+                        }
+                        catch (Exception taskEx)
+                        {
+                            this.Log.Error(taskEx, "Error in single-select task");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, "Error in RunCommand");
+            }
         }
         // ASYNC API CALLS
         private void ConfigCall()
