@@ -66,7 +66,7 @@
                 {
                     this.Log.Info($"Single-select mode: {this.unreal._actor}");
 
-                    var actorPath = this.unreal._actor;
+                    var actorPath = this.unreal.GetCurrentActor(this.unreal._actorindex);
                     var localEndpoint = this.endpoint; // Capture endpoint for closure
 
                     Task.Run(async () =>
@@ -150,7 +150,7 @@
                 {
                     this.Log.Info($"Single-select mode: {this.unreal._actor}");
 
-                    var actorPath = this.unreal._actor;
+                    var actorPath = this.unreal.GetCurrentActor(this.unreal._actorindex);
                     var localEndpoint = this.endpoint; // Capture endpoint for closure
 
                     Task.Run(async () =>

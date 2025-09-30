@@ -3,6 +3,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
     using System;
     using System.Net;
     using System.Net.Http;
+    using System.Reflection.Metadata.Ecma335;
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         public Int32 _actorcount;
         public Boolean _hasselection;
 
+        public Int32 _actorindex = 0;
         public Boolean _multiselect = false;
 
         public UnrealRemoteService()
@@ -32,11 +34,14 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public String FetchActor()
         {
+            // OUTDATED
             var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
             var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
             this._actor = selection.primarySelection;
             return this._actor;
         }
+
+        public String GetCurrentActor(Int32 index) => this._multiactors[index];
 
         public String[] ActorGroup()
         {
@@ -58,12 +63,24 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         {
             var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
             var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+
+            // set variables
             this._actor = selection.primarySelection;
             this._multiactors = ((JArray)selection.selectedActors).ToObject<string[]>();
             this._actorcount = selection.count;
             this._hasselection = selection.hasSelection;
-            //this._multiselect = this._actorcount > 1;
+
+            this.NormalizeActorIndex();
+            
             return;
+        }
+
+        private void NormalizeActorIndex()
+        {
+            if (this._actorindex >= this._actorcount)
+            {
+                this._actorindex = 0;
+            }
         }
 
         public async Task<bool> UpdateActorLocationAsync(string endpoint, string actorPath, float x, float y, float z)
@@ -109,7 +126,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 //this.Log.Info($"Unreal responded: {responseBody}");
                 return response.IsSuccessStatusCode;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //this.Log.Error(ex, "HTTP request failed");
                 return false;
@@ -158,7 +175,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 float Z = root.GetProperty("Z").GetSingle();
                 return (true, X, Y, Z);
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 // TODO: for error handling, figure out a way to bypass the protection level
                 //Loupedeck.UE_VirtualBridgePlugin.SetActorLocation.Log.Error(ex, "HTTP request failed");
@@ -209,7 +226,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 //this.Log.Info($"Unreal responded: {responseBody}");
                 return response.IsSuccessStatusCode;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //this.Log.Error(ex, "HTTP request failed");
                 return false;
@@ -258,7 +275,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 float YAW = root.GetProperty("Yaw").GetSingle();
                 return (true, ROLL, PITCH, YAW);
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 // TODO: for error handling, figure out a way to bypass the protection level
                 //Loupedeck.UE_VirtualBridgePlugin.SetActorLocation.Log.Error(ex, "HTTP request failed");
@@ -282,7 +299,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                     return;
                 }
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //this.Log.Error(ex, "Failed to load config.json");
                 return;

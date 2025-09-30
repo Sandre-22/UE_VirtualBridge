@@ -13,7 +13,6 @@ namespace Loupedeck.UE_VirtualBridgePlugin
     public class SetActorLocation : PluginDynamicCommand
     {
         private static readonly HttpClient client = new HttpClient();
-        float x, y, z;
         string endpoint;
 
 
