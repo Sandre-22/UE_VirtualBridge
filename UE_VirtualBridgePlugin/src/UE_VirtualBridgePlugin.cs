@@ -15,6 +15,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin
     public class UE_VirtualBridgePlugin : Plugin
     {
         public static UnrealRemoteService UnrealService { get; private set; }
+        public static SelectionListener SelectionListener { get; private set; }
 
         // Gets a value indicating whether this is an API-only plugin.
         public override Boolean UsesApplicationApiOnly => true;
@@ -40,13 +41,25 @@ namespace Loupedeck.UE_VirtualBridgePlugin
 
             UnrealService = new UnrealRemoteService();
             //UnrealService.ConfigService();
+
+            // Start HTTP listener on port 7070
+            SelectionListener = new SelectionListener(
+                port: 7070,
+                logInfo: (msg) => this.Log.Info(msg),
+                logError: (ex, msg) => this.Log.Error(ex, msg)
+            );
+            SelectionListener.Start();
+
+            this.Log.Info("Virtual Bridge Plugin Loaded");
             
         }
 
         // This method is called when the plugin is unloaded.
         public override void Unload()
         {
-            
+            SelectionListener?.Stop();
+            SelectionListener?.Dispose();
+            this.Log.Info("VirtualBridge plugin unloaded");
         }
     }
 }

@@ -62,14 +62,26 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public void GetSelections()
         {
-            var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
-            var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+            //var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
+            //var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+
+            var selection = UE_VirtualBridgePlugin.SelectionListener?.CurrentSelection;
 
             // set variables
-            this._actor = selection.primarySelection;
-            this._multiactors = ((JArray)selection.selectedActors).ToObject<string[]>();
-            this._actorcount = selection.count;
-            this._hasselection = selection.hasSelection;
+            if (selection != null)
+            {
+                this._actor = selection.PrimarySelection;
+                this._multiactors = selection.SelectedActors;
+                this._actorcount = selection.Count;
+                this._hasselection = selection.HasSelection;
+            }
+            else
+            {
+                this._actor = "";
+                this._multiactors = new string[0];
+                this._actorcount = 0;
+                this._hasselection = false;
+            }
 
             this.NormalizeActorIndex();
             
