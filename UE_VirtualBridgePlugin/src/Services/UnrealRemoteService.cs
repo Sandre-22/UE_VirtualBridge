@@ -62,9 +62,6 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public void GetSelections()
         {
-            //var jsonContent = File.ReadAllText(@"C:\Users\LDCtrlRoomSecond\Documents\Unreal Projects\VirtualBridgeConnect\selection.json");  // TODO: Make not hard coded or make easily readable to plugin
-            //var selection = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-
             var selection = UE_VirtualBridgePlugin.SelectionListener?.CurrentSelection;
 
             // set variables

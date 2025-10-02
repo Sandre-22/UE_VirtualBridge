@@ -34,7 +34,7 @@
             try
             {
                 _listener = new HttpListener();
-                _listener.Prefixes.Add($"http://localhost:{_port}/");
+                _listener.Prefixes.Add($"http://+:{_port}/");
                 _listener.Start();
 
                 _cancellationTokenSource = new CancellationTokenSource();
