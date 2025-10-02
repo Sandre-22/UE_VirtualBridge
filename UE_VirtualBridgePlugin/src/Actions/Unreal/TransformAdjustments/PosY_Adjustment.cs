@@ -40,10 +40,10 @@
                                 var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                    var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff * this.unreal._transmult, z);
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor Y position updated: {y + diff} for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor Y position updated: {y + diff * this.unreal._transmult} for {actorPath}");
                                     }
                                     else
                                     {
@@ -76,10 +76,10 @@
                             var (success, x, y, z) = await this.unreal.GetActorLocationAsync(localEndpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff, z);
+                                var updateSuccess = await unreal.UpdateActorLocationAsync(endpoint, actorPath, x, y + diff * this.unreal._transmult, z);
                                 if (updateSuccess)
                                 {
-                                    this.Log.Info($"Actor Y position updated: {y + diff}");
+                                    this.Log.Info($"Actor Y position updated: {y + diff * this.unreal._transmult}");
                                 }
                                 else
                                 {

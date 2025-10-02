@@ -41,10 +41,10 @@
                                 var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
                                 if (success)
                                 {
-                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                    var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff * this.unreal._transmult, yaw);
                                     if (updateSuccess)
                                     {
-                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: {pitch + diff} for {actorPath}");
+                                        this.Log.Info($"==MULTI== Actor PITCH rotation updated: {pitch + diff * this.unreal._transmult} for {actorPath}");
                                     }
                                     else
                                     {
@@ -77,10 +77,10 @@
                             var (success, roll, pitch, yaw) = await this.unreal.GetActorRotationAsync(endpoint, actorPath);
                             if (success)
                             {
-                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff, yaw);
+                                var updateSuccess = await this.unreal.UpdateActorRotationAsync(endpoint, actorPath, roll, pitch + diff * this.unreal._transmult, yaw);
                                 if (updateSuccess)
                                 {
-                                    this.Log.Info($"Actor PITCH rotation updated: {pitch + diff}");
+                                    this.Log.Info($"Actor PITCH rotation updated: {pitch + diff * this.unreal._transmult}");
                                 }
                                 else
                                 {

@@ -7,18 +7,22 @@
     public class TransformMultiplierCommand : PluginDynamicCommand
     {
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
+        private float _max = 32f;
+        private float _min = 0.25f;
         public TransformMultiplierCommand()
-    : base(displayName: "Transform Multiplier", description: "Toggles the ability to move multiple actors at once.", groupName: "Unreal###Transform")
+    : base(displayName: "Transform Multiplier", description: "Determines the increment a transform adjustment has on the object, up to 16x.", groupName: "Unreal###Transform")
         {
         }
 
         protected override void RunCommand(String actionParameter)
         {
-            this.unreal._multiselect = !this.unreal._multiselect;
+            this.unreal._transmult *= 2f;
+            if (this.unreal._transmult > this._max){
+                this.unreal._transmult = this._min;}
             this.ActionImageChanged();
         }
 
         protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>
-            $"MultiSelect{Environment.NewLine}{this.unreal._multiselect}";
+            $"Transform Multiplier: {Environment.NewLine}{this.unreal._transmult}";
     }
 }
