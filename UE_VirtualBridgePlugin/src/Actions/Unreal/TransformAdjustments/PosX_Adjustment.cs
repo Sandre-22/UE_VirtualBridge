@@ -89,7 +89,7 @@
                             }
                             else
                             {
-                                this.Log.Error("Failed to get current actor location");
+                                this.Log.Error($"Failed to get current actor location at path {actorPath}");
                             }
                         }
                         catch (Exception taskEx)
