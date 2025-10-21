@@ -40,6 +40,6 @@ UE_VirtualBridge log file > C:\Users\<User>\AppData\Local\Logi\LogiPluginService
 
 
 --- IMPORTANT FILES ---
-Loupedeck config file (VBconfig.json) --> should point to the host PC's IP4.
+Loupedeck config file (VBconfig.json *in program files*) --> should point to the host PC's IP4.
 Unreal plugin config file (VirtualBridgeConfig.json) --> should point to the mini PC's IP4.
 BaseEngine.ini --> should set a DefaultBindAddress for the host computer's IP4.
