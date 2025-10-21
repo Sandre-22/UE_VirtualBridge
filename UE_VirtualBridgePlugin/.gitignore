@@ -400,4 +400,4 @@ FodyWeavers.xsd
 .DS_Store
 
 # Local config with sensitive info
-config.json
+VBconfig.json

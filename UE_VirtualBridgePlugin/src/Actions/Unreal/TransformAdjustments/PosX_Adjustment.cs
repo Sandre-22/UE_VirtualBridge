@@ -191,7 +191,7 @@
 
         private void ConfigCall()
         {
-            var configText = File.ReadAllText("config.json");
+            var configText = File.ReadAllText("VBconfig.json");
             using var doc = JsonDocument.Parse(configText);
             var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
             endpoint = fetchEndpoint?.TrimEnd('/') + "/remote/object/call";

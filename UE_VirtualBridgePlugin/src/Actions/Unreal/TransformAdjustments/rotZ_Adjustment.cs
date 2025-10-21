@@ -192,23 +192,14 @@
         // ASYNC API CALLS
         private void ConfigCall()
         {
-            try
-            {
-                var configText = File.ReadAllText("config.json");
-                using var doc = JsonDocument.Parse(configText);
-                var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
-                endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
+            var configText = File.ReadAllText("VBconfig.json");
+            using var doc = JsonDocument.Parse(configText);
+            var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+            endpoint = fetchEndpoint?.TrimEnd('/') + "/remote/object/call";
 
-                if (string.IsNullOrWhiteSpace(endpoint))
-                {
-                    this.Log.Error("UnrealEndpoint not set in config.json");
-                    return;
-                }
-            }
-            catch (Exception ex)
+            if (String.IsNullOrWhiteSpace(endpoint))
             {
-                this.Log.Error(ex, "Failed to load config.json");
-                return;
+                this.Log.Error("UnrealEndpoint not set in config.json");
             }
         }
     }

@@ -18,7 +18,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         private static readonly HttpClient client = new HttpClient();
 
         String _endpoint;
-        public String UnrealEndpoint { get; private set; } = "http://192.168.10.223:30010"; // fallback
+        public String UnrealEndpoint { get; private set; } = "http://192.168.10.76:30010"; // fallback
 
         public String _actor;
         public String[] _multiactors;  // make a fixed set of slots?
@@ -298,7 +298,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         {
             try
             {
-                var configText = File.ReadAllText("config.json");
+                var configText = File.ReadAllText("VBconfig.json");
                 using var doc = JsonDocument.Parse(configText);
                 var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
                 _endpoint = fetchEndpoint.TrimEnd('/') + "/remote/object/call";
