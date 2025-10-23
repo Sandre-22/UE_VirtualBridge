@@ -18,11 +18,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         private static readonly HttpClient client = new HttpClient();
 
         String _endpoint;
-<<<<<<< HEAD
-        public String UnrealEndpoint { get; private set; } = "http://192.168.10.76:30010"; // fallback
-=======
-        public String UnrealEndpoint { get; private set; } = "http://192.168.10.209:30010"; // fallback
->>>>>>> f82f1bbf80a26a327f4d049b98b68962e88f5e7f
+        public String UnrealEndpoint { get; private set; } = "http://192.168.10.213:30010"; // fallback
 
         public String _actor;
         public String[] _multiactors;  // make a fixed set of slots?
@@ -298,6 +294,74 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         }
 
+        public async Task<bool> SetGridSnappingAsync(string endpoint, bool enabled)
+        {
+            return await ExecutePresetFunctionAsync(
+                endpoint,
+                "ConsoleCommandsPreset",  // Your preset name
+                "Set Transform Grid Snapping",
+                new { bEnabled = enabled }
+            );
+        }
+
+        public async Task<bool> SetGridSizeAsync(string endpoint, float size)
+        {
+            return await ExecutePresetFunctionAsync(
+                endpoint,
+                "ConsoleCommandsPreset",
+                "Set Transform Grid Snapping",
+                new { Size = size }
+            );
+        }
+
+        public async Task<bool> ToggleGridSnappingAsync(string endpoint, bool currentState)
+        {
+            return await SetGridSnappingAsync(endpoint, !currentState);
+        }
+
+        // Run commands with this method
+        public async Task<bool> ExecutePresetFunctionAsync(string endpoint, string presetName, string functionName, object parameters = null)
+        /*
+         * Calls a function exposed in a Remote Control Preset
+         * 
+         * PARAMETERS:
+         * <string> endpoint -> the URL that connects to the UE WebServer
+         * <string> presetName -> name of your Remote Control Preset (e.g., "VirtualBridgePreset")
+         * <string> functionName -> name of the exposed function
+         * <object> parameters -> parameters as an anonymous object
+         */
+        {
+            _endpoint = endpoint.TrimEnd('/') + $"/remote/preset/{presetName}/function/{functionName}";
+
+            // Try different payload formats - Unreal can be picky about this
+            var payload = new { parameters = parameters };
+
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
+
+            using var request = new HttpRequestMessage(HttpMethod.Put, _endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                // Log the response for debugging
+                System.Diagnostics.Debug.WriteLine($"Response: {responseBody}");
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+                return false;
+            }
+        }
+
+
         public void ConfigService()
         {
             try
@@ -319,5 +383,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 return;
             }
         }
+
+
     }
 }
