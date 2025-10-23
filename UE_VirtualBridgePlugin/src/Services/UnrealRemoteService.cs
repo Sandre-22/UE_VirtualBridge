@@ -294,32 +294,70 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         }
 
-        public async Task<bool> SetGridSnappingAsync(string endpoint, bool enabled)
+        public async Task<bool> DeselectActorsAsync(string endpoint, bool hasSelection)
         {
-            return await ExecutePresetFunctionAsync(
-                endpoint,
-                "ConsoleCommandsPreset",  // Your preset name
-                "Set Transform Grid Snapping",
-                new { bEnabled = enabled }
-            );
+            return await ExecutePresetFunctionAsync(endpoint, "ConsoleCommandsPreset", "Deselect Actors", new { hasSelection = hasSelection});
         }
 
-        public async Task<bool> SetGridSizeAsync(string endpoint, float size)
+        // LOCATION GRID SNAP
+        public async Task<bool> ToggleLocGridSnappingAsync(string endpoint, bool currentState)
+        {
+            return await SetLocGridSnappingAsync(endpoint, !currentState);
+        }
+
+        public async Task<bool> SetLocGridSnappingAsync(string endpoint, bool enabled)
         {
             return await ExecutePresetFunctionAsync(
                 endpoint,
                 "ConsoleCommandsPreset",
-                "Set Transform Grid Snapping",
+                "Set Loc Grid Snapping",
+                new { bEnabled = enabled }
+            );
+        }
+
+        public async Task<bool> SetGridSizeAsync(string endpoint, float size)  //implement later
+        {
+            return await ExecutePresetFunctionAsync(
+                endpoint,
+                "ConsoleCommandsPreset",
+                "Set Loc Grid Snapping",
                 new { Size = size }
             );
         }
 
-        public async Task<bool> ToggleGridSnappingAsync(string endpoint, bool currentState)
+        // ROTATION ANGLE SNAP
+        public async Task<bool> ToggleRotAngleSnappingAsync(string endpoint, bool currentState)
         {
-            return await SetGridSnappingAsync(endpoint, !currentState);
+            return await SetRotAngleSnappingAsync(endpoint, !currentState);
         }
 
-        // Run commands with this method
+        public async Task<bool> SetRotAngleSnappingAsync(string endpoint, bool enabled)
+        {
+            return await ExecutePresetFunctionAsync(
+                endpoint,
+                "ConsoleCommandsPreset",
+                "Set Rot Angle Snapping",
+                new { bEnabled = enabled }
+            );
+        }
+
+        // SCALE SNAP
+        public async Task<bool> ToggleScaleSnappingAsync(string endpoint, bool currentState)
+        {
+            return await SetScaleSnappingAsync(endpoint, !currentState);
+        }
+
+        public async Task<bool> SetScaleSnappingAsync(string endpoint, bool enabled)
+        {
+            return await ExecutePresetFunctionAsync(
+                endpoint,
+                "ConsoleCommandsPreset",
+                "Set Scale Snapping",
+                new { bEnabled = enabled }
+            );
+        }
+
+        // RUNS BLUEPRINT PRESET FUNCTIONS
         public async Task<bool> ExecutePresetFunctionAsync(string endpoint, string presetName, string functionName, object parameters = null)
         /*
          * Calls a function exposed in a Remote Control Preset

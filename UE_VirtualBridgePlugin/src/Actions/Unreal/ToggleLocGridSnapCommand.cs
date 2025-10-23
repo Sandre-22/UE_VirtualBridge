@@ -6,12 +6,12 @@
 
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class ToggleTranslateGridSnapCommand : PluginDynamicCommand
+    public class ToggleLocGridSnapCommand : PluginDynamicCommand
     {
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
         private bool _gridSnapEnabled = true;
-        public ToggleTranslateGridSnapCommand()
-    : base(displayName: "Toggle Translate Grid Snap", description: "When MultiSelect disabled, chooses a specific actor to manipulate from the ones selected.", groupName: "Unreal###Editor") { }
+        public ToggleLocGridSnapCommand()
+    : base(displayName: "Toggle Translate Grid Snap", description: "Turn positional grid snapping on and off.", groupName: "Unreal###Editor") { }
 
         protected override void RunCommand(String actionParameter)
         {
@@ -24,9 +24,9 @@
                 try
                 {
                     this.Log.Info("Calling SetGridSnappingAsync...");
-                    bool success = await this.unreal.SetGridSnappingAsync(
+                    bool success = await this.unreal.ToggleLocGridSnappingAsync(
                         this.unreal.UnrealEndpoint,
-                        !this._gridSnapEnabled
+                        this._gridSnapEnabled
                     );
 
                     this.Log.Info($"Success: {success}");
