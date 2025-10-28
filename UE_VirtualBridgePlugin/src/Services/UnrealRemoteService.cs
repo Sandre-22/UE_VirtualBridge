@@ -357,7 +357,25 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
             );
         }
 
-        // RUNS BLUEPRINT PRESET FUNCTIONS
+        // FOCAL LENGTH
+        public async Task<bool> UpdateFocalLength(string endpoint, float length)
+        {
+            return await ExecutePresetFunctionAsync(endpoint, 
+                "ConsoleCommandsPreset", 
+                "Adjust Focal", 
+                new { FocalLength = length });
+        }
+
+        // GLOBAL EXPOSURE
+        public async Task<bool> SetGlobalExposureAsync(string endpoint, float value)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Exposure Compensation",
+                new { PropertyValue = value });
+        }
+
+        // RUNS BLUEPRINT PRESET FUNCTIONS IN THE REMOTE CONTROL PRESET
         public async Task<bool> ExecutePresetFunctionAsync(string endpoint, string presetName, string functionName, object parameters = null)
         /*
          * Calls a function exposed in a Remote Control Preset
@@ -371,10 +389,39 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         {
             _endpoint = endpoint.TrimEnd('/') + $"/remote/preset/{presetName}/function/{functionName}";
 
-            // Try different payload formats - Unreal can be picky about this
             var payload = new { parameters = parameters };
 
             var jsonBody = System.Text.Json.JsonSerializer.Serialize(payload);
+
+            using var request = new HttpRequestMessage(HttpMethod.Put, _endpoint)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8)
+            };
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                // Log the response for debugging
+                System.Diagnostics.Debug.WriteLine($"Response: {responseBody}");
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        // CONNECTS TO EXPOSED PROPERTIES IN THE REMOTE CONTROL PRESET
+        public async Task<bool> ExecutePresetPropertyAsync(string endpoint, string presetName, string propertyName, object value)
+        {
+            _endpoint = endpoint.TrimEnd('/') + $"/remote/preset/{presetName}/property/{propertyName}";
+
+            var jsonBody = System.Text.Json.JsonSerializer.Serialize(value);
 
             using var request = new HttpRequestMessage(HttpMethod.Put, _endpoint)
             {
