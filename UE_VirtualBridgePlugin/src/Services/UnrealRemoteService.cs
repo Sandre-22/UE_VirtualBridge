@@ -375,6 +375,32 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 new { PropertyValue = value });
         }
 
+        // ENABLE INNER FRUSTUM
+        public async Task<bool> SetEnableFrustumAsync(string endpoint, bool enable)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Enable Inner Frustum",
+                new { PropertyValue = enable });
+        }
+
+        // OVERSCAN
+        public async Task<bool> SetEnableOverscanAsync(string endpoint, bool enable)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Enable Inner Frustum Overscan",
+                new { PropertyValue = enable });
+        }
+
+        public async Task<bool> SetOverscanAsync(string endpoint, float value)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Overscan Multiplier",
+                new { PropertyValue = value });
+        }
+
         // RUNS BLUEPRINT PRESET FUNCTIONS IN THE REMOTE CONTROL PRESET
         public async Task<bool> ExecutePresetFunctionAsync(string endpoint, string presetName, string functionName, object parameters = null)
         /*
