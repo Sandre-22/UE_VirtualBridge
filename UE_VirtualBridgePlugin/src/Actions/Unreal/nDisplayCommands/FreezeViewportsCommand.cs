@@ -6,12 +6,12 @@
 
     using Loupedeck.UE_VirtualBridgePlugin.Services;
 
-    public class EnableInnerFrustumCommand : PluginDynamicCommand
+    public class FreezeViewportsCommand : PluginDynamicCommand
     {
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
-        private bool _enabled = true;
-        public EnableInnerFrustumCommand()
-    : base(displayName: "Enable Frustum", description: "Turn the scalar snapping on and off", groupName: "Unreal###nDisplay") { }
+        private bool _enabled = false;
+        public FreezeViewportsCommand()
+    : base(displayName: "Freeze Viewports", description: "Turn the scalar snapping on and off", groupName: "Unreal###nDisplay") { }
 
         protected override void RunCommand(String actionParameter)
         {
@@ -23,7 +23,7 @@
                 try
                 {
                     this.Log.Info("Calling ToggleScaleSnapAsync...");
-                    bool success = await this.unreal.SetEnableFrustumAsync(
+                    bool success = await this.unreal.SetFreezeViewports(
                         this.unreal.UnrealEndpoint,
                         this._enabled
                     );
@@ -50,8 +50,8 @@
 
         protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize)
         {
-            string status = this._enabled ? "OFF" : "ON";
-            return $"Frustum {Environment.NewLine}{status}";
+            string status = this._enabled ? "ON" : "FRZ";
+            return $"Viewports {Environment.NewLine}{status}";
         }
     }
 }

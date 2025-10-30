@@ -23,7 +23,7 @@
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            float adjustment = diff / 100;
+            float adjustment = (float) diff / 10;
             Task.Run(async () =>
             {
                 try

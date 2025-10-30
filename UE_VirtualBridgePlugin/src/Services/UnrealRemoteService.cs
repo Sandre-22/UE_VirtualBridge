@@ -375,12 +375,29 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 new { PropertyValue = value });
         }
 
-        // ENABLE INNER FRUSTUM
+        // INNER FRUSTUM CALLS
         public async Task<bool> SetEnableFrustumAsync(string endpoint, bool enable)
         {
             return await this.ExecutePresetPropertyAsync(endpoint,
                 "ConsoleCommandsPreset",
                 "Enable Inner Frustum",
+                new { PropertyValue = enable });
+        }
+
+        public async Task<bool> SetIFPercentAsync(string endpoint, float value)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Inner Frustum Screen Percentage",
+                new { PropertyValue = value });
+        }
+
+        // FREEZE VIEWPORTS
+        public async Task<bool> SetFreezeViewports(string endpoint, bool enable)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Freeze Viewports",
                 new { PropertyValue = enable });
         }
 
