@@ -18,7 +18,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         private static readonly HttpClient client = new HttpClient();
 
         String _endpoint;
-        public String UnrealEndpoint { get; private set; } = "http://192.168.10.213:30010"; // fallback
+        public String UnrealEndpoint { get; private set; } = "http://192.168.10.209:30010"; // fallback
 
         public String _actor;
         public String[] _multiactors;  // make a fixed set of slots?
@@ -31,6 +31,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
 
         public UnrealRemoteService()
         {
+            //this.UnrealEndpoint = Config();
         }
 
         public String FetchActor()
@@ -392,13 +393,21 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 new { PropertyValue = value });
         }
 
-        // FREEZE VIEWPORTS
+        // NODE VIEWPORTS
         public async Task<bool> SetFreezeViewports(string endpoint, bool enable)
         {
             return await this.ExecutePresetPropertyAsync(endpoint,
                 "ConsoleCommandsPreset",
                 "Freeze Viewports",
                 new { PropertyValue = enable });
+        }
+
+        public async Task<bool> SetViewportPercentageAsync(string endpoint, float value)
+        {
+            return await this.ExecutePresetPropertyAsync(endpoint,
+                "ConsoleCommandsPreset",
+                "Viewports Screen Percentage",
+                new { PropertyValue = value });
         }
 
         // OVERSCAN
@@ -511,6 +520,22 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
                 return;
             }
         }
+        /*
+        public String Config()
+        {
+            try
+            {
+                var configText = File.ReadAllText("VBconfig.json");
+                using var doc = JsonDocument.Parse(configText);
+                var fetchEndpoint = doc.RootElement.GetProperty("UnrealEndpoint").GetString();
+                return fetchEndpoint.TrimEnd('/') + "/remote/object/call";
+            }
+            catch //(Exception ex)
+            {
+                //this.Log.Error(ex, "Failed to load config.json");
+                return this.UnrealEndpoint;
+            }
+        }*/
 
 
     }

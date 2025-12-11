@@ -11,26 +11,27 @@
 
     public class ViewportScreenPercentageAdjustment : PluginDynamicAdjustment
     {
-        private float currentLength;
+        private float current=1.0f;
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
 
         public ViewportScreenPercentageAdjustment() : base(
-            displayName: "Adjust Focal Length",
-            description: "Adjusts camera's focal length by multiple of 5",
-            groupName: "Unreal###Camera",
+            displayName: "View Screen Percent",
+            description: "Adjusts the nDisplay's viewport screen percentage by 1/10 per dial movement.",
+            groupName: "Unreal###nDisplay",
             hasReset: true) { }
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
+            float adjustment = (float)diff / 10;
             Task.Run(async () =>
             {
                 try
                 {
-                    bool success = await this.unreal.UpdateFocalLength(this.unreal.UnrealEndpoint, this.currentLength + diff);
+                    bool success = await this.unreal.SetViewportPercentageAsync(this.unreal.UnrealEndpoint, this.current + adjustment);
                     if (success)
                     {
-                        this.currentLength += diff; // only update the current length if the call was successful
-                        this.Log.Info($"Success in updating camera FOCAL, current length set at {currentLength}");
+                        this.current += adjustment; // only update the current length if the call was successful
+                        this.Log.Info($"Success in updating VIEWPORT SCREEN PERCENTAGE, current length set at {current}");
                     }
                 }
                 catch (Exception ex)
@@ -47,11 +48,10 @@
             {
                 try
                 {
-                    bool success = await this.unreal.UpdateFocalLength(this.unreal.UnrealEndpoint, this.RoundToNearestFive(this.currentLength));
+                    bool success = await this.unreal.UpdateFocalLength(this.unreal.UnrealEndpoint, 1.0f);
                     if (success)
                     {
-                        this.currentLength = this.RoundToNearestFive(this.currentLength);
-                        this.Log.Info($"Success in updating camera FOCAL, current length set at {currentLength}");
+                        this.Log.Info($"Success in updating camera FOCAL, current length set at {current}");
                     }
                 }
                 catch (Exception ex)
@@ -60,7 +60,5 @@
                 }
             });
         }
-
-        private float RoundToNearestFive(float number) => (float)Math.Round(number / 5.0) * 5;
     }
 }

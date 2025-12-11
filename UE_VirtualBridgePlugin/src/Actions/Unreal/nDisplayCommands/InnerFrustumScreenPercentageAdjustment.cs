@@ -11,7 +11,7 @@
 
     public class InnerFrustumScreenPercentageAdjustment : PluginDynamicAdjustment
     {
-        private float current;
+        private float current=1.0f;
         private UnrealRemoteService unreal => UE_VirtualBridgePlugin.UnrealService;
 
         public InnerFrustumScreenPercentageAdjustment() : base(
