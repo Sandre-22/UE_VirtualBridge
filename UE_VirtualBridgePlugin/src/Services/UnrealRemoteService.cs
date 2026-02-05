@@ -18,7 +18,7 @@ namespace Loupedeck.UE_VirtualBridgePlugin.Services
         private static readonly HttpClient client = new HttpClient();
 
         String _endpoint;
-        public String UnrealEndpoint { get; private set; } = "http://192.168.10.209:30010"; // fallback
+        public String UnrealEndpoint { get; private set; } = "http://172.31.100.10:30010"; // fallback
 
         public String _actor;
         public String[] _multiactors;  // make a fixed set of slots?
